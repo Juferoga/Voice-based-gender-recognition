@@ -8,14 +8,12 @@ from python_speech_features import delta
 class FeaturesExtractor:
     def __init__(self):
         pass
-       
     def extract_features(self, audio_path):
         """
         Extract voice features including the Mel Frequency Cepstral Coefficient (MFCC)
         from an audio using the python_speech_features module, performs Cepstral Mean
         Normalization (CMS) and combine it with MFCC deltas and the MFCC double
         deltas.
-     
         Args: 	    
             audio_path (str) : path to wave file without silent moments. 
         Returns: 	    
