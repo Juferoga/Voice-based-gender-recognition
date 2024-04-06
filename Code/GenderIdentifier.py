@@ -3,6 +3,7 @@ import pickle
 import warnings
 import numpy as np
 from FeaturesExtractor import FeaturesExtractor
+from sklearn.metrics import confusion_matrix, classification_report
 
 warnings.filterwarnings("ignore")
 
@@ -15,12 +16,16 @@ class GenderIdentifier:
         self.error                 = 0
         self.total_sample          = 0
         self.features_extractor    = FeaturesExtractor()
+        # Verdaderos vs predicciones
+        self.true_labels = []
+        self.predictions = []
         # load models
         self.screams_gmm = pickle.load(open(screams_model_path, 'rb'))
         self.non_screams_gmm   = pickle.load(open(non_screams_model_path, 'rb'))
 
     def process(self):
         files = self.get_file_paths(self.screams_training_path, self.non_screams_training_path)
+        print(files)
         # read the test directory and get the list of test audio files
         for file in files:
             self.total_sample += 1
@@ -31,7 +36,9 @@ class GenderIdentifier:
             expected_gender = file.split("/")[1][:-1]
 
             print("%10s %6s %1s" % ("+ EXPECTATION",":", expected_gender))
+            self.true_labels.append(expected_gender == "scream")
             print("%10s %3s %1s" %  ("+ IDENTIFICATION", ":", winner))
+            self.predictions.append(winner == "scream")
 
             if winner != expected_gender: self.error += 1
             print("----------------------------------------------------")
@@ -39,6 +46,11 @@ class GenderIdentifier:
         accuracy     = ( float(self.total_sample - self.error) / float(self.total_sample) ) * 100
         accuracy_msg = "*** Accuracy = " + str(round(accuracy, 3)) + "% ***"
         print(accuracy_msg)
+
+        print("Matriz de confusión:")
+        print(confusion_matrix(self.true_labels, self.predictions))
+        print("\nReporte de clasificación:")
+        print(classification_report(self.true_labels, self.predictions))
 
     def get_file_paths(self, screams_training_path, non_screams_training_path):
         # get file paths
@@ -62,7 +74,6 @@ class GenderIdentifier:
         else                                                : winner = "scream"
         return winner
 
-
 if __name__== "__main__":
-    gender_identifier = GenderIdentifier("TestingData/scream", "TestingData/non_scream", "screams.gmm", "non_screams.gmm")
+    gender_identifier = GenderIdentifier("TestingData/screams", "TestingData/non_screams", "screams.gmm", "non_screams.gmm")
     gender_identifier.process()

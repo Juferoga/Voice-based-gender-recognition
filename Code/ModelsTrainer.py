@@ -7,7 +7,6 @@ from FeaturesExtractor import FeaturesExtractor
 
 warnings.filterwarnings("ignore")
 
-
 class ModelsTrainer:
 
     def __init__(self, screams_files_path, non_screams_files_path):
@@ -16,12 +15,14 @@ class ModelsTrainer:
         self.features_extractor    = FeaturesExtractor()
 
     def process(self):
-        screams, non_screams = self.get_file_paths(self.screams_training_path,
-                                            self.non_screams_training_path)
+        screams, non_screams = self.get_file_paths(
+                self.screams_training_path,
+                self.non_screams_training_path
+            )
         # collect voice features
         scream_voice_features = self.collect_features(screams)
         non_scream_voice_features   = self.collect_features(non_screams)
-        # generate gaussian mixture models
+        # generate Gaussian mixture models
         screams_gmm = GaussianMixture(n_components = 16, max_iter = 200, covariance_type='diag', n_init = 3)
         non_screams_gmm   = GaussianMixture(n_components = 16, max_iter = 200, covariance_type='diag', n_init = 3)
         # fit features to models
@@ -50,7 +51,7 @@ class ModelsTrainer:
         features = np.asarray(())
         # extract features for each speaker
         for file in files:
-            print("%5s %10s" % ("PROCESSNG ", file))
+            print("%5s %10s" % ("PROCESSING ", file))
             # extract MFCC & delta MFCC features from audio
             vector    = self.features_extractor.extract_features(file)
             # stack the features
@@ -69,7 +70,6 @@ class ModelsTrainer:
         with open(filename, 'wb') as gmm_file:
             pickle.dump(gmm, gmm_file)
         print ("%5s %10s" % ("SAVING", filename,))
-
 
 if __name__== "__main__":
     models_trainer = ModelsTrainer("TrainingData/screams", "TrainingData/non_screams")

@@ -102,3 +102,9 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+non_scream
+scream
+
+TestingData/
+TrainingData/
