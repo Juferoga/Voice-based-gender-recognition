@@ -12,4 +12,4 @@ if __name__== "__main__":
 
     # test system and recognise/identify speakers gender
     print(" # Identify genders")
-    os.system('python3 Code/GenderIdentifier.py')
+    os.system('python3 Code/ScreamIdentifier.py')

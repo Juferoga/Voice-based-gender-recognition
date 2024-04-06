@@ -8,7 +8,7 @@ from sklearn.metrics import confusion_matrix, classification_report
 warnings.filterwarnings("ignore")
 
 
-class GenderIdentifier:
+class ScreamIdentifier:
 
     def __init__(self, screams_files_path, non_screams_files_path, screams_model_path, non_screams_model_path):
         self.screams_training_path = screams_files_path
@@ -32,15 +32,15 @@ class GenderIdentifier:
             print("%10s %8s %1s" % ("--> TESTING", ":", os.path.basename(file)))
 
             vector = self.features_extractor.extract_features(file)
-            winner = self.identify_gender(vector)
-            expected_gender = file.split("/")[1][:-1]
+            winner = self.identify_scream(vector)
+            expected_scream = file.split("/")[1][:-1]
 
-            print("%10s %6s %1s" % ("+ EXPECTATION",":", expected_gender))
-            self.true_labels.append(expected_gender == "scream")
+            print("%10s %6s %1s" % ("+ EXPECTATION",":", expected_scream))
+            self.true_labels.append(expected_scream == "scream")
             print("%10s %3s %1s" %  ("+ IDENTIFICATION", ":", winner))
             self.predictions.append(winner == "scream")
 
-            if winner != expected_gender: self.error += 1
+            if winner != expected_scream: self.error += 1
             print("----------------------------------------------------")
 
         accuracy     = ( float(self.total_sample - self.error) / float(self.total_sample) ) * 100
@@ -59,7 +59,7 @@ class GenderIdentifier:
         files   = screams + non_screams
         return files
 
-    def identify_gender(self, vector):
+    def identify_scream(self, vector):
         # scream hypothesis scoring
         is_scream_scores         = np.array(self.screams_gmm.score(vector))
         is_scream_log_likelihood = is_scream_scores.sum()
@@ -75,5 +75,5 @@ class GenderIdentifier:
         return winner
 
 if __name__== "__main__":
-    gender_identifier = GenderIdentifier("TestingData/screams", "TestingData/non_screams", "screams.gmm", "non_screams.gmm")
+    gender_identifier = ScreamIdentifier("TestingData/screams", "TestingData/non_screams", "screams.gmm", "non_screams.gmm")
     gender_identifier.process()
