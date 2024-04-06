@@ -3,7 +3,11 @@ import pickle
 import warnings
 import numpy as np
 from FeaturesExtractor import FeaturesExtractor
-from sklearn.metrics import confusion_matrix, classification_report
+
+# librerías para gráficas
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import confusion_matrix, roc_curve, auc, classification_report
 
 warnings.filterwarnings("ignore")
 
@@ -48,9 +52,28 @@ class ScreamIdentifier:
         print(accuracy_msg)
 
         print("Matriz de confusión:")
-        print(confusion_matrix(self.true_labels, self.predictions))
+        cm = confusion_matrix(self.true_labels, self.predictions)
+        print(cm)
         print("\nReporte de clasificación:")
         print(classification_report(self.true_labels, self.predictions))
+
+        ## Generar imagen matriz de confusión 
+        plt.figure(figsize=(10, 7))
+        sns.heatmap(cm, annot=True, fmt="d")
+        plt.title("Matriz de confusión")
+        plt.ylabel('Etiquetas actuales')
+        plt.xlabel('Etiquetas predichas')
+        plt.show()
+
+        # Gráfica curva AUC
+        fpr, tpr, _ = roc_curve(self.true_labels,  self.predictions, pos_label=2)
+        plt.figure(figsize=(10, 7))
+        plt.plot(fpr, tpr, label="AUC="+str(auc(fpr, tpr)))
+        plt.xlabel('Tasa de falsos positivos')
+        plt.ylabel('Tasa de verdaderos positivos')
+        plt.title('Característica operativa del receptor')
+        plt.legend(loc=4)
+        plt.show()
 
     def get_file_paths(self, screams_training_path, non_screams_training_path):
         # get file paths
