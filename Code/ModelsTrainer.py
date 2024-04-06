@@ -10,43 +10,43 @@ warnings.filterwarnings("ignore")
 
 class ModelsTrainer:
 
-    def __init__(self, females_files_path, males_files_path):
-        self.females_training_path = females_files_path
-        self.males_training_path   = males_files_path
+    def __init__(self, screams_files_path, non_screams_files_path):
+        self.screams_training_path = screams_files_path
+        self.non_screams_training_path   = non_screams_files_path
         self.features_extractor    = FeaturesExtractor()
 
     def process(self):
-        females, males = self.get_file_paths(self.females_training_path,
-                                             self.males_training_path)
+        screams, non_screams = self.get_file_paths(self.screams_training_path,
+                                            self.non_screams_training_path)
         # collect voice features
-        female_voice_features = self.collect_features(females)
-        male_voice_features   = self.collect_features(males)
+        scream_voice_features = self.collect_features(screams)
+        non_scream_voice_features   = self.collect_features(non_screams)
         # generate gaussian mixture models
-        females_gmm = GaussianMixture(n_components = 16, max_iter = 200, covariance_type='diag', n_init = 3)
-        males_gmm   = GaussianMixture(n_components = 16, max_iter = 200, covariance_type='diag', n_init = 3)
+        screams_gmm = GaussianMixture(n_components = 16, max_iter = 200, covariance_type='diag', n_init = 3)
+        non_screams_gmm   = GaussianMixture(n_components = 16, max_iter = 200, covariance_type='diag', n_init = 3)
         # fit features to models
-        females_gmm.fit(female_voice_features)
-        males_gmm.fit(male_voice_features)
+        screams_gmm.fit(scream_voice_features)
+        non_screams_gmm.fit(non_scream_voice_features)
         # save models
-        self.save_gmm(females_gmm, "females")
-        self.save_gmm(males_gmm,   "males")
+        self.save_gmm(screams_gmm, "screams")
+        self.save_gmm(non_screams_gmm,   "non_screams")
 
-    def get_file_paths(self, females_training_path, males_training_path):
+    def get_file_paths(self, screams_training_path, non_screams_training_path):
         # get file paths
-        females = [ os.path.join(females_training_path, f) for f in os.listdir(females_training_path) ]
-        males   = [ os.path.join(males_training_path, f) for f in os.listdir(males_training_path) ]
-        return females, males
+        screams = [ os.path.join(screams_training_path, f) for f in os.listdir(screams_training_path) ]
+        non_screams   = [ os.path.join(non_screams_training_path, f) for f in os.listdir(non_screams_training_path) ]
+        return screams, non_screams
 
     def collect_features(self, files):
         """
-    	Collect voice features from various speakers of the same gender.
-
-    	Args:
-    	    files (list) : List of voice file paths.
-
-    	Returns:
-    	    (array) : Extracted features matrix.
-    	"""
+            Collect voice features from various speakers of the same gender.
+            
+            Args:
+                files (list) : List of voice file paths.
+                
+            Returns:
+                (array) : Extracted features matrix.
+        """
         features = np.asarray(())
         # extract features for each speaker
         for file in files:
@@ -72,5 +72,5 @@ class ModelsTrainer:
 
 
 if __name__== "__main__":
-    models_trainer = ModelsTrainer("TrainingData/females", "TrainingData/males")
+    models_trainer = ModelsTrainer("TrainingData/screams", "TrainingData/non_screams")
     models_trainer.process()

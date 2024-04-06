@@ -1,91 +1,59 @@
 import os
-import sys
 import math
-import tarfile
-
 
 class DataManager:
-    def __init__(self, dataset_path):
-        self.dataset_path = dataset_path
-
-    def extract_dataset(self, compressed_dataset_file_name, dataset_directory):
-        try:
-            # extract files to dataset folder
-            tar = tarfile.open(compressed_dataset_file_name, "r:gz")
-            tar.extractall(dataset_directory)
-            tar.close()
-            print("Files extraction was successfull ...")
-
-        except:
-            print("Ecxception raised: No extraction was done ...")
+    def __init__(self, scream_path, non_scream_path):
+        self.scream_path = scream_path
+        self.non_scream_path = non_scream_path
 
     def make_folder(self, folder_path):
         try:
             os.mkdir(folder_path)
-            print(folder_path, "was created ...")
-        except:
-            print("Ecxception raised: ", folder_path, "could not be created ...")
+            print(folder_path, "ha sido creado ...")
+        except FileExistsError:
+            print(folder_path, "ya existe ...")
+        except Exception as e:
+            print("Exception raised: ", folder_path, "No se pudo crear porque ...", e)
 
     def move_files(self, src, dst, group):
         for fname in group:
-            os.rename(src + '/' + fname, dst + '/' + fname)
+            os.rename(os.path.join(src, fname), os.path.join(dst, fname))
 
-    def get_fnames_from_dict(self, dataset_dict, f_or_m):
+    def split_data(self, files):
         training_data, testing_data = [], []
-
-        for i in range(1,5):
-            length_data       = len(dataset_dict[f_or_m +"000" + str(i)])
-            length_separator  = math.trunc(length_data*2/3)
-
-            training_data += dataset_dict[f_or_m + "000" + str(i)][:length_separator]
-            testing_data  += dataset_dict[f_or_m + "000" + str(i)][length_separator:]
-
+        length_data = len(files)
+        length_separator = math.trunc(length_data * 2 / 3)
+        training_data += files[:length_separator]
+        testing_data += files[length_separator:]
         return training_data, testing_data
 
     def manage(self):
+        # Gather file names
+        scream_files = os.listdir(self.scream_path)
+        non_scream_files = os.listdir(self.non_scream_path)
 
-        # read config file and get path to compressed dataset
-        compressed_dataset_file_name = self.dataset_path
-        dataset_directory = compressed_dataset_file_name.split(".")[0]
+        # Split data into training and testing sets
+        training_scream, testing_scream = self.split_data(scream_files)
+        training_non_scream, testing_non_scream = self.split_data(non_scream_files)
 
-        # create a folder for the data
-        try:
-            os.mkdir(dataset_directory)
-        except:
-            pass
-
-        # extract dataset
-        self.extract_dataset(compressed_dataset_file_name, dataset_directory)
-
-        # select females files and males files
-        file_names   = [fname for fname in os.listdir(dataset_directory) if ("f0" in fname or "m0" in fname)]
-        dataset_dict = {"f0001": [], "f0002": [], "f0003": [], "f0004": [], "f0005": [],
-                        "m0001": [], "m0002": [], "m0003": [], "m0004": [], "m0005": [], }
-
-        # fill in dictionary
-        for fname in file_names:
-            dataset_dict[fname.split('_')[0]].append(fname)
-
-        # divide and group file names
-        training_set, testing_set = {},{}
-        training_set["females"], testing_set["females"] = self.get_fnames_from_dict(dataset_dict, "f")
-        training_set["males"  ], testing_set["males"  ] = self.get_fnames_from_dict(dataset_dict, "m")
-
-        # make training and testing folders
+        # Make training and testing folders
         self.make_folder("TrainingData")
         self.make_folder("TestingData")
-        self.make_folder("TrainingData/females")
-        self.make_folder("TrainingData/males")
-        self.make_folder("TestingData/females")
-        self.make_folder("TestingData/males")
+        self.make_folder("TrainingData/screams")
+        self.make_folder("TrainingData/non_screams")
+        self.make_folder("TestingData/screams")
+        self.make_folder("TestingData/non_screams")
 
-        # move files
-        self.move_files(dataset_directory, "TrainingData/females", training_set["females"])
-        self.move_files(dataset_directory, "TrainingData/males",   training_set["males"])
-        self.move_files(dataset_directory, "TestingData/females",  testing_set["females"])
-        self.move_files(dataset_directory, "TestingData/males",    testing_set["males"])
+        # Move files
+        self.move_files(self.scream_path, "TrainingData/screams", training_scream)
+        self.move_files(self.scream_path, "TestingData/screams", testing_scream)
+        self.move_files(self.non_scream_path, "TrainingData/non_screams", training_non_scream)
+        self.move_files(self.non_scream_path, "TestingData/non_screams", testing_non_scream)
 
+if __name__ == "__main__":
+    # Paths to the scream and non_scream directories
+    scream_path = "scream"
+    non_scream_path = "non_scream"
 
-if __name__== "__main__":
-    data_manager = DataManager("SLR45.tgz")
+    data_manager = DataManager(scream_path, non_scream_path)
     data_manager.manage()
